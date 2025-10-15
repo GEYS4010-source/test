@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Hello Website</title>
-    <link rel="stylesheet" href="style.css">
+  <title>Sign Language Demo</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1 id="greeting">Hello, World!</h1>
-    <button onclick="changeGreeting()">Say Hello Again</button>
-    <script src="script.js"></script>
+  <h1>Sign Language Recognizer</h1>
+  <p>Recognized Text: <span id="recognizedText"></span></p>
+  <div>
+    <video id="webcam" autoplay playsinline></video>
+  </div>
+  <button onclick="init()">Start Camera</button>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose@latest/dist/teachablemachine-pose.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
