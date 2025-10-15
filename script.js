@@ -1,7 +1,6 @@
-const URL = "<PASTE_YOUR_TEACHABLE_MACHINE_MODEL_URL_HERE>";
-
-let model, webcam, ctx, maxPredictions;
-let lastPrediction = "";
+// script.js
+const URL = "https://teachablemachine.withgoogle.com/models/zTaXGph_1/";
+let model, webcam, ctx, labelContainer, maxPredictions;
 
 async function init() {
     const modelURL = URL + "model.json";
@@ -17,14 +16,16 @@ async function init() {
     await webcam.play();
     window.requestAnimationFrame(loop);
 
-    const canvas = document.createElement("canvas");
-    canvas.width = size;
-    canvas.height = size;
+    const canvas = document.getElementById("canvas");
+    canvas.width = size; canvas.height = size;
     ctx = canvas.getContext("2d");
-    document.querySelector("div").appendChild(canvas);
+    labelContainer = document.getElementById("label-container");
+    for (let i = 0; i < maxPredictions; i++) {
+        labelContainer.appendChild(document.createElement("div"));
+    }
 }
 
-async function loop(timestamp) {
+async function loop() {
     webcam.update();
     await predict();
     window.requestAnimationFrame(loop);
@@ -34,24 +35,27 @@ async function predict() {
     const { pose, posenetOutput } = await model.estimatePose(webcam.canvas);
     const prediction = await model.predict(posenetOutput);
 
-    let highestProbability = 0;
-    let predictionText = "";
-
+    let recognizedText = "";
     for (let i = 0; i < maxPredictions; i++) {
-        if (prediction[i].probability.toFixed(2) > highestProbability) {
-            highestProbability = prediction[i].probability.toFixed(2);
-            predictionText = prediction[i].className;
+        const classPrediction =
+            prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+        labelContainer.childNodes[i].innerHTML = classPrediction;
+        if (prediction[i].probability > 0.95) {
+            recognizedText = prediction[i].className;
         }
     }
+    document.getElementById("recognizedText").innerText = recognizedText;
 
-    if (highestProbability > 0.90 && predictionText !== lastPrediction) {
-        lastPrediction = predictionText;
-        document.getElementById("recognizedText").innerText = predictionText;
-    }
+    drawPose(pose);
+}
 
-    ctx.drawImage(webcam.canvas, 0, 0);
-    if (pose) {
-        tmPose.drawKeypoints(pose.keypoints, 0.5, ctx);
-        tmPose.drawSkeleton(pose.keypoints, 0.5, ctx);
+function drawPose(pose) {
+    if (webcam.canvas) {
+        ctx.drawImage(webcam.canvas, 0, 0);
+        if (pose) {
+            const minPartConfidence = 0.5;
+            tmPose.drawKeypoints(pose.keypoints, minPartConfidence, ctx);
+            tmPose.drawSkeleton(pose.keypoints, minPartConfidence, ctx);
+        }
     }
 }
